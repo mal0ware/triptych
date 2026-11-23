@@ -87,8 +87,9 @@ def test_reproduces_longstaff_schwartz_table_1() -> None:
     the paper's simulated value.
 
     The tree criterion was first set at half a cent from the paper's finite
-    difference value and one cell missed it by 0.0009 (S = 44, sigma = 0.40,
-    T = 2). It is now one cent, the agreement the paper reports between its
+    difference value and one cell missed it (S = 44, sigma = 0.40, T = 2:
+    0.0052 below on this grid, 0.0058 on the finer grid of the full run). It
+    is now one cent, the agreement the paper reports between its
     own two finite difference schemes. PAPER.md has the detail.
     """
     cfg = dataclasses.replace(FULL, bermudan_steps_per_date=20)

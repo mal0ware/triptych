@@ -60,7 +60,7 @@ One addition is not in the paper. `crr_price(..., exercise_every=m)` allows earl
 
 ## Monte Carlo and variance reduction
 
-The terminal price is sampled exactly, `S_T = S exp((r - sigma^2/2) T + sigma sqrt(T) Z)` with `Z` standard normal, which is the solution of the paper's equation (7) of Longstaff and Schwartz, `dS = r S dt + sigma S dZ`. There is no time-stepping error in the European simulations.
+The terminal price is sampled exactly, `S_T = S exp((r - sigma^2/2) T + sigma sqrt(T) Z)` with `Z` standard normal, which solves `dS = r S dt + sigma S dZ`, equation (7) of Longstaff and Schwartz. There is no time-stepping error in the European simulations.
 
 - Plain: the mean of `exp(-rT) payoff(S_T)`.
 - Antithetic: each `Z` is used again as `-Z` and the two discounted payoffs are averaged. The standard error is computed from those pair averages, which are the independent samples.
@@ -104,3 +104,91 @@ Differences from the paper's procedure:
 2. `lsm_price` takes the larger of the simulated value and today's exercise value, so the result is never below intrinsic value. The paper's exercise dates start after time zero. In all 20 cells of Table 1 the simulated value is above intrinsic value, so this does not bind there.
 3. The random numbers are numpy's PCG64 at fixed seeds. The paper does not say which generator it used, so its values cannot be reproduced digit for digit, only up to sampling error.
 4. The paper does not say how its standard errors were computed. See the comparison below.
+
+## Comparison with the sources, claim by claim
+
+### Black and Scholes
+
+| Claim | Result |
+| --- | --- |
+| Equations (13) and (27) give the European call and put | The code matches the 20 European put values printed in Longstaff and Schwartz's Table 1 to three decimals and the 27 Black-Scholes call values in Cox, Ross and Rubinstein's Table 2 to the cent. |
+| Equation (25): call minus put equals `S - K exp(-rT)` | Holds to within four units of machine precision times `S + K` over 480 parameter sets. Call and put are computed from separate formulas, so parity is not built in. |
+| Equation (7) | The analytic greeks satisfy it with a residual below `1e-10 (S + K)` over the same grid, calls and puts. |
+
+### Cox, Ross and Rubinstein
+
+| Claim | Result |
+| --- | --- |
+| Table 2, binomial values for n = 5 and n = 20 (S = 40, r = 1.05, expiries of 1, 4 and 7 months, three strikes, three volatilities) | All 54 values reproduced to the cent, taking the rate as `ln 1.05` and the expiries as 1/12, 4/12 and 7/12 of a year. |
+| The binomial value converges to the Black-Scholes value as n grows | Error falls as 1/n: fitted slope -1.000 over 10 to 20,000 steps. For the at-the-money put the error is about -0.805/n for even n and +0.667/n for odd n, so it alternates in sign. The first step count after which the error stays below 0.00005 is 16,105. |
+| Early exercise raises the value of a put | On a grid of 90 puts the American tree value is never below the European tree value or the exercise value. With a zero rate the two are equal. An American call equals the European call. |
+
+The American tree's own convergence was measured against a 50,000-step tree: fitted slope -1.016 over 10 to 5,000 steps, along an uneven path (`results/american_tree_convergence.png`).
+
+### Longstaff and Schwartz, Table 1
+
+Set-up as in the paper. One run per cell, seed 2101 plus the cell's row number counted from zero. Full table: `results/longstaff_schwartz_table1.csv`.
+
+| Claim in the paper | Result here |
+| --- | --- |
+| Simulated American values, 20 cells | All 20 within three of the paper's reported standard errors. 15 within one, 18 within two. The two beyond two are S = 44, sigma = 0.20, T = 2 (1.693 against 1.675, 2.1 standard errors) and S = 44, sigma = 0.40, T = 2 (5.672 against 5.622, 2.4). |
+| Finite-difference values for 50 exercise dates a year | A tree with 200 steps between exercise dates is within 0.0005 in 15 cells, within 0.004 in 19, and 0.0058 below the paper in one (S = 44, sigma = 0.40, T = 2: 5.6412 against 5.647). |
+| "Of the 20 differences shown in Table 1, 16 are less than or equal to one cent" (simulation against finite difference) | Here 15 of 20 simulated values are within one cent of the tree. The largest difference is 0.031. |
+| "the differences are both positive and negative" | 13 negative, 7 positive, mean -0.0010. |
+| Standard errors "range from 0.7 to 2.4 cents" | Treating all paths as independent gives 0.65 to 2.25 cents here, between 0.92 and 1.11 times the paper's figure in every cell. |
+
+Three of these need a reason.
+
+#### The cell at S = 44, sigma = 0.40, T = 2
+
+The tree with 50 exercise dates a year gives 5.6412, and the value does not move with the grid: 10, 20, 21, 50, 100 and 200 steps per exercise date give 5.6429, 5.6418, 5.6415, 5.6412, 5.6414 and 5.6412. The paper prints 5.647. The same tree with exercise allowed at every step gives 5.6467.
+
+All five cells with sigma = 0.40 and T = 2 are below the paper, by 0.0012, 0.0019, 0.0030, 0.0037 and 0.0058 as the spot rises from 36 to 44. In the other 15 cells the largest gap is 0.0005.
+
+The paper's scheme used 1,000 steps for the stock price, and the authors report that their implicit and explicit schemes agreed "generally within one cent" (p. 126). My reading is that the paper's finite-difference values carry an error of a few tenths of a cent that grows with volatility and maturity, most likely from the stock-price grid or its upper boundary. I cannot check that without the authors' grid. The gap is inside the tolerance the paper states.
+
+#### The standard errors
+
+The paper does not say how they were computed. Dividing the standard deviation of the 100,000 discounted cash flows by the square root of 100,000 reproduces them. That treats a path and its mirror image as independent. They are negatively correlated for a put, so the estimate is more precise than that figure says. Computed from the 50,000 pair averages, the standard error is 43% to 84% of it, depending on the cell.
+
+A direct check: 20 independent runs at 128,000 paths for S = 36, sigma = 0.20, T = 1 had a standard deviation of 0.0050. The pair-based standard error scaled to that size is 0.0053 and the all-independent one is 0.0082. Neither figure accounts for the paths being tied together through the regressions, and this check suggests that effect is small.
+
+Judged by the pair-based standard errors, the simulation is less close to the tree than the paper's standard errors suggest. The largest gaps are 2.6 pair-based standard errors (S = 44, sigma = 0.40, T = 2), 2.3 and 2.2. With 20 cells and one seed that is weak evidence of bias, and I did not rerun with other seeds to look.
+
+#### The acceptance criterion
+
+The task was to reproduce Table 1 "within its reported standard errors". Two independent simulations with the same standard error differ by more than one of them about half the time, so 20 out of 20 within one was never expected. The test was set at three before the run, and the counts within one and two are reported above.
+
+### Convergence of the simulations
+
+| Curve | Expected | Fitted |
+| --- | --- | --- |
+| Plain Monte Carlo, RMSE over 100 runs, 1,000 to 1,024,000 payoffs | -0.5 | -0.505 |
+| Antithetic | -0.5 | -0.528 |
+| Control variate | -0.5 | -0.525 |
+| Antithetic and control variate | -0.5 | -0.511 |
+| Least-squares Monte Carlo, RMSE over 20 runs, 1,000 to 128,000 paths | -0.5 | -0.531 |
+| Simulated greeks, relative RMSE over 100 runs | -0.5 | -0.509 to -0.520 |
+| Central-difference delta against bump size, bumps of 0.1% and larger | 2 | 1.994 |
+
+At 1,000 and 2,000 paths least-squares Monte Carlo is biased high by 0.037 and 0.023: the regression is fitted to the same paths it then values. From 32,000 paths the mean error is between -0.002 and -0.003.
+
+For central differences, rounding error takes over once the bump is small enough (near 0.0003% for delta and 0.01% for gamma), and the error rises again as the bump shrinks further.
+
+## Variants tried
+
+Everything that was run with more than one setting, including settings that were dropped.
+
+1. Seeds. Before the experiment seeds were fixed I ran least-squares Monte Carlo once on the first cell with seed 7 (4.4701) as a smoke test. The reported table uses base seed 2001 with a fixed offset per experiment. No seed was changed after a result was seen. The 100,000-path table was computed three times with those seeds (in the test suite, in a diagnostic print and in the full run) and gave the same simulated values each time.
+2. Tree criterion against the paper's finite-difference column. First set at half a cent. One cell missed it: 0.0052 below the paper on the test's grid, 0.0058 on the full run's. It was changed to one cent, the tolerance the paper itself reports, and the miss is written up above.
+3. Steps between exercise dates in the tree. 10 in the fast run, 20 in the test, 200 in the full run. On four cells I also printed 10, 20, 21, 50, 100 and 200 to see whether the tree had converged.
+4. Control coefficient in the headline simulation. The first draft estimated it in sample. A test then showed the 1/n bias described above, and the headline was changed to take the coefficient from the pilot run. This was before the full run, which was done once.
+5. Two tests were rewritten after failing. The tree's halving test first mixed odd and even step counts, which have different error constants; it now uses even counts. The unbiasedness test first held the in-sample control coefficient to exact unbiasedness; it now tests fixed coefficients for that and bounds the in-sample bias separately.
+6. Not varied: the basis functions, the number of paths, the number of exercise dates, the finite-difference bump in the greeks table (0.1%) and the experiment sizes are the first values chosen.
+
+## Not verified
+
+- The pathwise estimators were not checked against Broadie and Glasserman (1996), only against the analytic greeks.
+- Section titles in Cox, Ross and Rubinstein were not read. The formulas were, on the pages cited.
+- The explanation offered for the finite-difference gap is a guess.
+- Nothing here was run on a second machine. Monte Carlo results depend on numpy's generator and could differ in the last digits with another numpy version.
