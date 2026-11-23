@@ -1,0 +1,25 @@
+estimator,payoffs,rmse,mean_error
+plain,1000,0.108308,-0.014834
+plain,4000,0.052434,0.003575
+plain,16000,0.025436,-0.004864
+plain,64000,0.013659,3.630e-04
+plain,256000,0.005905,1.341e-04
+plain,1024000,0.003390,-2.871e-05
+antithetic,1000,0.096297,0.002436
+antithetic,4000,0.042532,0.007720
+antithetic,16000,0.019233,-8.779e-04
+antithetic,64000,0.010880,-5.452e-04
+antithetic,256000,0.004331,-3.537e-04
+antithetic,1024000,0.002526,-2.068e-04
+control variate,1000,0.074928,-0.010326
+control variate,4000,0.039187,0.002575
+control variate,16000,0.017004,-0.001906
+control variate,64000,0.009412,-1.322e-04
+control variate,256000,0.003490,-1.302e-04
+control variate,1024000,0.002196,-1.098e-04
+antithetic + control variate,1000,0.035019,-4.145e-05
+antithetic + control variate,4000,0.016684,5.014e-04
+antithetic + control variate,16000,0.008288,-2.681e-04
+antithetic + control variate,64000,0.003889,-5.056e-04
+antithetic + control variate,256000,0.002165,2.463e-04
+antithetic + control variate,1024000,9.728e-04,-5.208e-05
