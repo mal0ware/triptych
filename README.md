@@ -155,7 +155,7 @@ PAPER.md           citations, formulas, comparison with the sources
 - Least-squares Monte Carlo is run in sample, as in the paper: the same paths fit the exercise rule and value the option. At 128,000 paths its mean error against the tree over 20 runs was -0.002 with a standard error of 0.001. That hints at the low bias an imperfect exercise rule should give, without establishing it.
 - Gamma by simulation is a likelihood-ratio estimator applied to the pathwise delta. A purely pathwise gamma does not exist for a payoff with a kink.
 - The paper's random numbers are unknown, so its Table 1 can be matched only up to sampling error.
-- The CI workflow has not run yet. The repository is private and nothing has been checked on GitHub's runners.
+- The CI workflow has not run. GitHub refused to start the job on the first push because of the account's Actions billing, so the checks have only been run locally, on Windows.
 - This is textbook material. The point is that it is exact, tested, and that every number can be reproduced.
 - This is research code. It is not investment advice and it does not trade.
 
