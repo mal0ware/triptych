@@ -1,0 +1,13 @@
+spot,method,steps_needed,searched_up_to
+36.000000,plain tree,18166,25000
+36.000000,"plain tree, Richardson, both trees even",9952,10000
+36.000000,smoothed tree,642,10000
+36.000000,"smoothed tree, Richardson",252,10000
+40.000000,plain tree,16105,25000
+40.000000,"plain tree, Richardson, both trees even",68,10000
+40.000000,smoothed tree,3621,10000
+40.000000,"smoothed tree, Richardson",368,10000
+44.000000,plain tree,12374,25000
+44.000000,"plain tree, Richardson, both trees even",9544,10000
+44.000000,smoothed tree,3150,10000
+44.000000,"smoothed tree, Richardson",232,10000

@@ -1,4 +1,5 @@
 method,effort,price,error,std_error
 Black-Scholes formula,closed form,2.066401,0,0
 CRR binomial tree,16105 steps,2.066442,4.147e-05,0
+Smoothed tree with Richardson extrapolation,184 and 368 steps,2.066403,1.687e-06,0
 "Monte Carlo, antithetic + control variate",442000000 payoffs,2.066470,6.949e-05,5.005e-05

@@ -1,14 +1,14 @@
-curve,expected,fitted
-"European tree, error against steps",-1.000000,-0.999845
-"Monte Carlo (plain), RMSE against payoffs",-0.500000,-0.504803
-"Monte Carlo (antithetic), RMSE against payoffs",-0.500000,-0.528189
-"Monte Carlo (control variate), RMSE against payoffs",-0.500000,-0.525480
-"Monte Carlo (antithetic + control variate), RMSE against payoffs",-0.500000,-0.511122
-"Least-squares Monte Carlo, RMSE against paths",-0.500000,-0.530751
-"American tree, error against steps",-1.000000,-1.016118
-"Finite-difference delta, error against bump (bump >= 1e-3)",2.000000,1.994009
-"Monte Carlo delta, RMSE against payoffs",-0.500000,-0.509477
-"Monte Carlo gamma, RMSE against payoffs",-0.500000,-0.519894
-"Monte Carlo vega, RMSE against payoffs",-0.500000,-0.519894
-"Monte Carlo theta, RMSE against payoffs",-0.500000,-0.516668
-"Monte Carlo rho, RMSE against payoffs",-0.500000,-0.513808
+curve,expected,fitted,ci_low,ci_high
+"European tree, error against steps",-1.000000,-0.999845,,
+"Monte Carlo (plain), RMSE against payoffs",-0.500000,-0.504803,-0.528326,-0.480041
+"Monte Carlo (antithetic), RMSE against payoffs",-0.500000,-0.528189,-0.554267,-0.501955
+"Monte Carlo (control variate), RMSE against payoffs",-0.500000,-0.525480,-0.548406,-0.501359
+"Monte Carlo (antithetic + control variate), RMSE against payoffs",-0.500000,-0.511122,-0.537879,-0.483959
+"Least-squares Monte Carlo, RMSE against paths",-0.500000,-0.530751,-0.607887,-0.455800
+"American tree, error against steps",-1.000000,-1.016118,,
+"Finite-difference delta, error against bump (bump >= 1e-3)",2.000000,1.994009,,
+"Monte Carlo delta, RMSE against payoffs",-0.500000,-0.509477,-0.531320,-0.486380
+"Monte Carlo gamma, RMSE against payoffs",-0.500000,-0.519894,-0.542022,-0.499055
+"Monte Carlo vega, RMSE against payoffs",-0.500000,-0.519894,-0.541427,-0.498235
+"Monte Carlo theta, RMSE against payoffs",-0.500000,-0.516668,-0.538059,-0.495787
+"Monte Carlo rho, RMSE against payoffs",-0.500000,-0.513808,-0.536115,-0.488694

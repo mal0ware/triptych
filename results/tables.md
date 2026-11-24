@@ -4,6 +4,7 @@
 | --- | --- | --- | --- | --- |
 | Black-Scholes formula | closed form | 2.066401 | 0 | 0 |
 | CRR binomial tree | 16105 steps | 2.066442 | 4.147e-05 | 0 |
+| Smoothed tree with Richardson extrapolation | 184 and 368 steps | 2.066403 | 1.687e-06 | 0 |
 | Monte Carlo, antithetic + control variate | 442000000 payoffs | 2.066470 | 6.949e-05 | 5.005e-05 |
 
 ## variance_reduction
@@ -58,20 +59,85 @@
 | 44.000000 | 0.400000 | 1.000000 | 3.948000 | 3.947670 | 3.952775 | -3.297e-04 | 3.783000 | 3.782799 | 3.957000 | 0.017000 | 3.934713 | 0.010695 | 0.016269 | -0.022287 | -1.310985 | -0.012957 |
 | 44.000000 | 0.400000 | 2.000000 | 5.647000 | 5.641237 | 5.646724 | -0.005763 | 5.202000 | 5.201995 | 5.622000 | 0.021000 | 5.672451 | 0.011970 | 0.021060 | 0.050451 | 2.402431 | 0.031214 |
 
+## american_bounds
+
+| spot | vol | maturity | tree_50_dates | in_sample | lower | lower_se | upper | upper_se | gap | tree_minus_lower_in_se | upper_minus_tree_in_se |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 36.000000 | 0.200000 | 1.000000 | 4.477870 | 4.485002 | 4.475158 | 0.001356 | 4.482847 | 0.001740 | 0.007689 | 2.000433 | 2.859910 |
+| 40.000000 | 0.200000 | 1.000000 | 2.314056 | 2.313942 | 2.310882 | 0.001174 | 2.316698 | 0.001542 | 0.005816 | 2.703427 | 1.713644 |
+| 44.000000 | 0.200000 | 1.000000 | 1.109893 | 1.113361 | 1.109879 | 0.001225 | 1.114336 | 0.001407 | 0.004456 | 0.010621 | 3.158348 |
+| 36.000000 | 0.400000 | 1.000000 | 7.101323 | 7.103823 | 7.098988 | 0.001883 | 7.113392 | 0.002481 | 0.014405 | 1.240287 | 4.865014 |
+| 40.000000 | 0.400000 | 1.000000 | 5.311886 | 5.309462 | 5.308844 | 0.001953 | 5.318880 | 0.002605 | 0.010035 | 1.557311 | 2.685280 |
+| 44.000000 | 0.400000 | 1.000000 | 3.947670 | 3.950175 | 3.945200 | 0.002411 | 3.956009 | 0.002912 | 0.010809 | 1.024688 | 2.863909 |
+
+## upper_bound_by_inner_paths
+
+| inner_paths | outer_paths | upper | upper_se | upper_minus_tree |
+| --- | --- | --- | --- | --- |
+| 500 | 100 | 4.521603 | 0.011153 | 0.043733 |
+| 1000 | 100 | 4.500177 | 0.006644 | 0.022307 |
+| 2000 | 100 | 4.492311 | 0.004923 | 0.014441 |
+| 4000 | 100 | 4.481841 | 0.003565 | 0.003971 |
+| 8000 | 100 | 4.484925 | 0.002525 | 0.007055 |
+
+## tree_steps_by_method
+
+| spot | method | steps_needed | searched_up_to |
+| --- | --- | --- | --- |
+| 36.000000 | plain tree | 18166 | 25000 |
+| 36.000000 | plain tree, Richardson, both trees even | 9952 | 10000 |
+| 36.000000 | smoothed tree | 642 | 10000 |
+| 36.000000 | smoothed tree, Richardson | 252 | 10000 |
+| 40.000000 | plain tree | 16105 | 25000 |
+| 40.000000 | plain tree, Richardson, both trees even | 68 | 10000 |
+| 40.000000 | smoothed tree | 3621 | 10000 |
+| 40.000000 | smoothed tree, Richardson | 368 | 10000 |
+| 44.000000 | plain tree | 12374 | 25000 |
+| 44.000000 | plain tree, Richardson, both trees even | 9544 | 10000 |
+| 44.000000 | smoothed tree | 3150 | 10000 |
+| 44.000000 | smoothed tree, Richardson | 232 | 10000 |
+
+## american_tree_methods
+
+| steps | plain_error | smoothed_error | smoothed_richardson_error | reference |
+| --- | --- | --- | --- | --- |
+| 25 | -0.002143 | 5.990e-04 | 0.015306 | 4.486675 |
+| 50 | -0.002177 | 4.167e-04 | 2.345e-04 | 4.486675 |
+| 100 | 0.001375 | 4.704e-05 | -3.227e-04 | 4.486675 |
+| 200 | 4.269e-04 | 1.711e-04 | 2.951e-04 | 4.486675 |
+| 400 | 2.662e-04 | -1.915e-05 | -2.094e-04 | 4.486675 |
+| 800 | 2.621e-04 | 2.640e-05 | 7.195e-05 | 4.486675 |
+| 1600 | 1.217e-04 | 1.207e-05 | -2.262e-06 | 4.486675 |
+| 3200 | -3.908e-05 | 1.006e-05 | 8.054e-06 | 4.486675 |
+| 50000 | -2.312e-06 |  |  | 4.486675 |
+
+## convergence_lsm
+
+| paths | rmse | mean_error | std_of_estimates | mean_error_out_of_sample | se_of_mean_out_of_sample |
+| --- | --- | --- | --- | --- | --- |
+| 1000 | 0.075086 | 0.037035 | 0.067014 | -0.036101 | 0.002785 |
+| 2000 | 0.045056 | 0.022546 | 0.040023 | -0.020931 | 0.002732 |
+| 4000 | 0.034641 | 0.001930 | 0.035486 | -0.016352 | 0.002229 |
+| 8000 | 0.023112 | 0.010626 | 0.021057 | -0.011235 | 0.001489 |
+| 16000 | 0.016136 | 0.002507 | 0.016354 | -0.006457 | 0.001064 |
+| 32000 | 0.011639 | -0.002848 | 0.011578 | -0.004107 | 0.001467 |
+| 64000 | 0.007907 | -0.002398 | 0.007731 | -0.003046 | 0.001506 |
+| 128000 | 0.005289 | -0.002135 | 0.004965 | -0.003261 | 0.001596 |
+
 ## convergence_slopes
 
-| curve | expected | fitted |
-| --- | --- | --- |
-| European tree, error against steps | -1.000000 | -0.999845 |
-| Monte Carlo (plain), RMSE against payoffs | -0.500000 | -0.504803 |
-| Monte Carlo (antithetic), RMSE against payoffs | -0.500000 | -0.528189 |
-| Monte Carlo (control variate), RMSE against payoffs | -0.500000 | -0.525480 |
-| Monte Carlo (antithetic + control variate), RMSE against payoffs | -0.500000 | -0.511122 |
-| Least-squares Monte Carlo, RMSE against paths | -0.500000 | -0.530751 |
-| American tree, error against steps | -1.000000 | -1.016118 |
-| Finite-difference delta, error against bump (bump >= 1e-3) | 2.000000 | 1.994009 |
-| Monte Carlo delta, RMSE against payoffs | -0.500000 | -0.509477 |
-| Monte Carlo gamma, RMSE against payoffs | -0.500000 | -0.519894 |
-| Monte Carlo vega, RMSE against payoffs | -0.500000 | -0.519894 |
-| Monte Carlo theta, RMSE against payoffs | -0.500000 | -0.516668 |
-| Monte Carlo rho, RMSE against payoffs | -0.500000 | -0.513808 |
+| curve | expected | fitted | ci_low | ci_high |
+| --- | --- | --- | --- | --- |
+| European tree, error against steps | -1.000000 | -0.999845 |  |  |
+| Monte Carlo (plain), RMSE against payoffs | -0.500000 | -0.504803 | -0.528326 | -0.480041 |
+| Monte Carlo (antithetic), RMSE against payoffs | -0.500000 | -0.528189 | -0.554267 | -0.501955 |
+| Monte Carlo (control variate), RMSE against payoffs | -0.500000 | -0.525480 | -0.548406 | -0.501359 |
+| Monte Carlo (antithetic + control variate), RMSE against payoffs | -0.500000 | -0.511122 | -0.537879 | -0.483959 |
+| Least-squares Monte Carlo, RMSE against paths | -0.500000 | -0.530751 | -0.607887 | -0.455800 |
+| American tree, error against steps | -1.000000 | -1.016118 |  |  |
+| Finite-difference delta, error against bump (bump >= 1e-3) | 2.000000 | 1.994009 |  |  |
+| Monte Carlo delta, RMSE against payoffs | -0.500000 | -0.509477 | -0.531320 | -0.486380 |
+| Monte Carlo gamma, RMSE against payoffs | -0.500000 | -0.519894 | -0.542022 | -0.499055 |
+| Monte Carlo vega, RMSE against payoffs | -0.500000 | -0.519894 | -0.541427 | -0.498235 |
+| Monte Carlo theta, RMSE against payoffs | -0.500000 | -0.516668 | -0.538059 | -0.495787 |
+| Monte Carlo rho, RMSE against payoffs | -0.500000 | -0.513808 | -0.536115 | -0.488694 |
