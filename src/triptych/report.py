@@ -101,7 +101,15 @@ def plot_lsm_panel(ax: Axes, rows: list[Row]) -> None:
         "s:",
         markersize=3,
         color=COLOURS[1],
-        label="|mean error|",
+        label="|mean error|, in sample",
+    )
+    ax.plot(
+        paths,
+        [abs(v) for v in _col(rows, "mean_error_out_of_sample")],
+        "^:",
+        markersize=3,
+        color=COLOURS[2],
+        label="|mean error|, out of sample",
     )
     _reference_line(ax, paths, 1.6 * _col(rows, "rmse")[0], -0.5, "slope -1/2")
     _loglog(ax, "simulated paths", "error in price", "American put: simulation against the tree")
@@ -189,19 +197,25 @@ def run_all(cfg: Config, out: Path, *, figures: bool = True) -> dict[str, list[R
     tables["variance_reduction_by_spot"] = ex.variance_reduction_by_spot(cfg)
     tables["greeks"] = ex.greeks_table(cfg)
     tables["longstaff_schwartz_table1"] = ex.longstaff_schwartz_table(cfg)
+    tables["american_bounds"] = ex.american_bounds(cfg)
+    tables["upper_bound_by_inner_paths"] = ex.upper_bound_by_inner_paths(cfg)
+    tables["tree_steps_by_method"] = ex.tree_steps_by_method(cfg)
     tables["convergence_tree"] = ex.tree_convergence(cfg)
-    tables["convergence_mc"] = ex.mc_convergence(cfg)
-    tables["convergence_lsm"] = ex.lsm_convergence(cfg)
+    tables["convergence_mc"], mc_curves = ex.mc_convergence(cfg)
+    tables["convergence_lsm"], lsm_curve = ex.lsm_convergence(cfg)
     tables["convergence_american_tree"] = ex.american_tree_convergence(cfg)
+    plain_reference = float(tables["convergence_american_tree"][-1]["price"])
+    tables["american_tree_methods"] = ex.american_tree_methods(cfg, plain_reference)
     tables["convergence_fd_bump"] = ex.fd_bump_convergence()
-    tables["convergence_mc_greeks"] = ex.pathwise_convergence(cfg)
+    tables["convergence_mc_greeks"], greek_curves = ex.pathwise_convergence(cfg)
     tables["convergence_slopes"] = ex.convergence_slopes(
+        cfg,
         tables["convergence_tree"],
-        tables["convergence_mc"],
-        tables["convergence_lsm"],
+        mc_curves,
+        lsm_curve,
         tables["convergence_american_tree"],
         tables["convergence_fd_bump"],
-        tables["convergence_mc_greeks"],
+        greek_curves,
     )
 
     for stem, rows in tables.items():
@@ -213,6 +227,11 @@ def run_all(cfg: Config, out: Path, *, figures: bool = True) -> dict[str, list[R
         "variance_reduction_by_spot",
         "greeks",
         "longstaff_schwartz_table1",
+        "american_bounds",
+        "upper_bound_by_inner_paths",
+        "tree_steps_by_method",
+        "american_tree_methods",
+        "convergence_lsm",
         "convergence_slopes",
     ]
     text = "\n\n".join(f"## {stem}\n\n{markdown_table(tables[stem])}" for stem in summary)

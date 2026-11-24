@@ -3,7 +3,16 @@
 import dataclasses
 from pathlib import Path
 
-from triptych.experiments import FAST, fitted_slope, tree_steps_for_tolerance
+import numpy as np
+
+from triptych.experiments import (
+    FAST,
+    Curve,
+    bootstrap_slope_interval,
+    first_count_within,
+    fitted_slope,
+    tree_steps_for_tolerance,
+)
 from triptych.option import Option
 from triptych.report import format_value, markdown_table, run_all
 
@@ -24,6 +33,17 @@ TINY = dataclasses.replace(
     bermudan_steps_per_date=2,
     american_tree_steps=(10, 20, 50),
     american_tree_reference=500,
+    richardson_scan_max=200,
+    american_methods_steps=(20, 40),
+    american_methods_reference=200,
+    lsm_oos_paths=2_000,
+    bound_fit_paths=2_000,
+    bound_lower_paths=2_000,
+    bound_outer=10,
+    bound_inner=50,
+    bound_inner_sweep=(20, 40),
+    bound_sweep_outer=10,
+    bootstrap_draws=20,
 )
 
 
@@ -62,3 +82,18 @@ def test_table_formatting() -> None:
     assert format_value(2.0664010044) == "2.066401"
     assert format_value(4.2e-5) == "4.200e-05"
     assert markdown_table([{"a": 1, "b": "x"}]).splitlines()[2] == "| 1 | x |"
+
+
+def test_first_count_within_is_past_the_last_miss() -> None:
+    errors = {1: 1.0, 2: 0.01, 3: 0.5, 4: 0.01, 5: 0.02}
+    assert first_count_within(errors.__getitem__, range(1, 6), 0.1) == 4
+    assert first_count_within(errors.__getitem__, range(1, 4), 0.1) == 0
+
+
+def test_bootstrap_interval_covers_the_true_slope() -> None:
+    rng = np.random.default_rng(0)
+    sizes = [1_000.0, 4_000.0, 16_000.0, 64_000.0]
+    errors = [rng.standard_normal(400) / np.sqrt(n) for n in sizes]
+    low, high = bootstrap_slope_interval(Curve(sizes, errors), 500, seed=1)
+    assert low < -0.5 < high
+    assert high - low < 0.1
